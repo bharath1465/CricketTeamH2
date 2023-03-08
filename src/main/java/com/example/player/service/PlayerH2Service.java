@@ -30,9 +30,10 @@ import java.util.*;
 
 @Service
  public class PlayerH2Service implements PlayerRepository {
+  int id=12;
     @Autowired
     private JdbcTemplate db;
-    // int id=
+    
     @Override
     public ArrayList<Player> getPlayers(){
       List<Player> playersList = db.query("select * from TEAM", new PlayerRowMapper());
@@ -51,9 +52,9 @@ import java.util.*;
     }
     @Override
     public Player addPlayer(Player teamPlayer){
-      db.update("insert into TEAM(playerId,playerName,jerseyNumber,role) values (?,?,?,?)",teamPlayer.getPlayerId(),teamPlayer.getPlayerName(),
-      teamPlayer.getJerseyNumber(),teamPlayer.getRole());
-      Player updatedPlayer= db.queryForObject("select * from TEAM where playerId = ? , playerName = ? , jerseyNumber = ? and  role = ?", new PlayerRowMapper(),teamPlayer.getPlayerId(), teamPlayer.getPlayerName(),teamPlayer.getJerseyNumber(),teamPlayer.getRole());
+      db.update("insert into TEAM(playerId,playerName,jerseyNumber,role) values (?,?,?,?)",teamPlayer.getPlayerId() ,teamPlayer.getPlayerName(),teamPlayer.getJerseyNumber(),teamPlayer.getRole());
+      id+=1;
+      Player updatedPlayer= db.queryForObject("select * from TEAM where playerId = ? ", new PlayerRowMapper(),teamPlayer.getPlayerId());
       return updatedPlayer;
     }
     @Override
@@ -71,6 +72,11 @@ import java.util.*;
     }
   @Override
     public void deletePlayer(int playerId){
-      db.update("DELETE FROM TEAM WHERE playerId=?",playerId);
+      try{
+        Player teamPlayer = db.queryForObject("select * from TEAM where playerId = ?", new PlayerRowMapper(),playerId);
+        db.update("DELETE FROM TEAM WHERE playerId=?",playerId);
+    }catch(Exception e){
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Ok");
     }
+ }
  }
